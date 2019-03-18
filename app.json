@@ -1,0 +1,24 @@
+{
+  "id": "io.myfox.api",
+  "version": "0.0.1",
+  "compatibility": ">=1.5.0",
+  "sdk": 2,
+  "name": {
+    "en": "MyFox"
+  },
+  "description": {
+    "en": "Link MyFox / Somfy Protect devices"
+  },
+  "category": [
+    "security"
+  ],
+  "permissions": [],
+  "images": {
+    "large": "/assets/images/large.png",
+    "small": "/assets/images/small.png"
+  },
+  "author": {
+    "name": "Leon Lanen",
+    "email": "l.lanen@gmail.com"
+  }
+}
