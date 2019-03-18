@@ -1,0 +1,25 @@
+{
+  "name": "io.myfox.api",
+  "version": "0.0.1",
+  "description": "Link MyFox / Somfy Protect devices",
+  "main": "app.js",
+  "dependencies": {
+    "homey-log": "^1.0.5",
+    "homey-oauth2app": "^1.2.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "run": "homeyConfig compose && athom project --run",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/llanen/io.myfox.api.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/llanen/io.myfox.api/issues"
+  },
+  "homepage": "https://github.com/llanen/io.myfox.api#readme"
+}

@@ -20,5 +20,38 @@
   "author": {
     "name": "Leon Lanen",
     "email": "l.lanen@gmail.com"
-  }
+  },
+  "drivers": [
+    {
+      "id": "myfox",
+      "name": {
+        "en": "myfox"
+      },
+      "class": "homealarm",
+      "capabilities": [
+        "homealarm_state"
+      ],
+      "images": {
+        "large": "/drivers/myfox/assets/images/large.png",
+        "small": "/drivers/myfox/assets/images/small.png"
+      },
+      "pair": [
+        {
+            "id": "login_oauth2",
+            "template": "login_oauth2"
+        },
+        {
+            "id": "list_devices",
+            "template": "list_devices_singular",
+            "navigation": {
+                "next": "add_devices"
+            }
+        },
+        {
+            "id": "add_devices",
+            "template": "add_devices"
+        }
+      ]
+    }
+  ]
 }
