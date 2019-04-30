@@ -29,8 +29,16 @@
       },
       "class": "homealarm",
       "capabilities": [
-        "homealarm_state"
+        "homealarm_state",
+        "alarm_generic",
+        "alarm_fire",
+        "alarm_tamper"
       ],
+      "capabilitiesOptions": {
+        "homealarm_state": {
+          "setable": false
+        }
+      },
       "images": {
         "large": "/drivers/myfox/assets/images/large.png",
         "small": "/drivers/myfox/assets/images/small.png"
