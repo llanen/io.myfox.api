@@ -11,20 +11,13 @@ class MyApp extends OAuth2App {
 		this.enableOAuth2Debug();
 		this.setOAuth2Config({
 			client: SomfyOAuth2Client,
-			clientId: Homey.env.CLIENT_ID,
-			clientSecret: Homey.env.CLIENT_SECRET,
-			apiUrl: 'https://api.myfox.io/v3/',
-			tokenUrl: 'https://accounts.somfy.com/oauth/oauth/v2/token',
-			authorizationUrl: 'https://accounts.somfy.com/oauth/oauth/v2/auth',
+			apiUrl: Homey.env.SOMFY_API_BASE,
+			tokenUrl: Homey.env.SOMFY_TOKEN_ENDPOINT,
+			authorizationUrl: Homey.env.SOMFY_AUTH_ENDPOINT
 		});
 
 		this.log(`${this.id} running...`);
 	}
-
-	// onInit() {
-	// 	this.log('MyApp is running...');
-	// }
-	
 }
 
 module.exports = MyApp;

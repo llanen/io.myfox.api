@@ -6,13 +6,13 @@ const { OAuth2Device, OAuth2Token, OAuth2Util } = require('homey-oauth2app');
 class MyFoxDevice extends OAuth2Device {
 
   async onOAuth2Init() {
-    this.log('onOAuth2Init()');
+    this.log('device.js onOAuth2Init()');
 
     // Indicate Homey is connecting to Toon
     await this.setUnavailable(Homey.__('authentication.connecting'));
 
     // Fetch initial data update
-	await this.getSite();
+    await this.getSite();
 	
     await this.setAvailable();
 
@@ -27,6 +27,7 @@ class MyFoxDevice extends OAuth2Device {
    * @returns {Promise<void>}
    */
   async resetOAuth2Client({ sessionId, configId }) {
+    this.log('onOAuth2Init()');
 
     // Store updated client config
     await this.setStoreValue('OAuth2SessionId', sessionId);
@@ -75,11 +76,11 @@ class MyFoxDevice extends OAuth2Device {
    * @private
    */
   processSite(data) {
-	this.log('processSite', new Date().getTime());
-	
-	if (data) {
-		this.log('security_level = '+data.security_level);
-	}
+    this.log('processSite', new Date().getTime());
+    this.log(data);
+    if (data) {
+      this.log('security_level = '+data.security_level);
+    }
   }
 
   /**
