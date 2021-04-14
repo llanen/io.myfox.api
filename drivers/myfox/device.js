@@ -1,14 +1,15 @@
 'use strict';
 
 const Homey = require('homey');
-const { OAuth2Device, OAuth2Token, OAuth2Util } = require('homey-oauth2app');
+const { OAuth2Device } = require('homey-oauth2app');
 
 var intervalHandle;
 
 class MyFoxDevice extends OAuth2Device {
-
   async onOAuth2Init() {
     this.log('device.js onOAuth2Init()');
+
+    this.registerCapabilityListener('homealarm_state', this.onCapabilityHomeAlarmState.bind(this));
 
     // Indicate Homey is connecting to Toon
     await this.setUnavailable(Homey.__('authentication.connecting'));
@@ -17,9 +18,6 @@ class MyFoxDevice extends OAuth2Device {
     await this.getSite();
 
     intervalHandle = setInterval( () => this.getSite(), 10000 );
-
-    // TODO: parse user info
-    // await this.getUser();
 	
     await this.setAvailable();
 
@@ -62,7 +60,7 @@ class MyFoxDevice extends OAuth2Device {
   }
 
 	/**
-	 * Getter for agreementId.
+	 * Getter for site id.
 	 * @returns {*}
 	 */
 	get id() {
@@ -84,35 +82,38 @@ class MyFoxDevice extends OAuth2Device {
    */
   processSite(data) {
     this.log('processSite', new Date().getTime());
-    this.log(data);
     if (data) {
       this.log('security_level = '+data.security_level);
       const haState = data.security_level === 'partial' ? 'partially_armed' : data.security_level;
       this.setCapabilityValue('homealarm_state', haState).catch(this.error);
-    }
 
-    // Check for alarm info
-    if (data.alarm) {
-      const status = data.alarm.status; //"none", "ongoing"
-      const alarmType = data.alarm.alarm_type; //"panic", "trespass", "smoke"
-      if (status === 'none') {
-        // clear any possbile alarm
-        this.setCapabilityValue('alarm_generic', false).catch(this.error);
-        this.setCapabilityValue('alarm_fire', false).catch(this.error);
-        this.setCapabilityValue('alarm_tamper', false).catch(this.error);
+      // Check for alarm info
+      if (data.alarm) {
+        const status = data.alarm.status; //"none", "ongoing"
+        this.log('alarm state = '+status);
+        if (status === 'none') {
+          // clear any possbile alarm
+          this.setCapabilityValue('alarm_generic', false).catch(this.error);
+          this.setCapabilityValue('alarm_fire', false).catch(this.error);
+          this.setCapabilityValue('alarm_tamper', false).catch(this.error);
+        }
+        else {
+          const alarmType = data.alarm.alarm_type; //"panic", "trespass", "smoke"
+          this.log('alarm type = '+alarmType);
+          if (alarmType === 'panic') {
+            this.setCapabilityValue('alarm_tamper', true).catch(this.error);
+          }
+          else if (alarmType === 'trespass') {
+            this.setCapabilityValue('alarm_generic', true).catch(this.error);
+          }
+          else if (alarmType === 'smoke') {
+            this.setCapabilityValue('alarm_fire', true).catch(this.error);
+          }
+        }
       }
-      else if (alarmType === 'panic') {
-        this.setCapabilityValue('alarm_tamper', true).catch(this.error);
+      else {
+        this.log("Alarm status not found");
       }
-      else if (alarmType === 'trespass') {
-        this.setCapabilityValue('alarm_generic', true).catch(this.error);
-      }
-      else if (alarmType === 'smoke') {
-        this.setCapabilityValue('alarm_fire', true).catch(this.error);
-      }
-    }
-    else {
-      this.log("Alarm status not found");
     }
   }
 
@@ -131,28 +132,28 @@ class MyFoxDevice extends OAuth2Device {
   }
 
   /**
-   * Method that handles processing an incoming site information
-   * @param data
-   * @private
+   * Set the state of the device, overrides the program.
+   * @param state ['away', 'home', 'sleep', 'comfort']
+   * @param keepProgram - if true program will resume after state change
    */
-  processUser(data) {
-    this.log('processSite', new Date().getTime());
-    this.log(data);
+   async updateAlarmState(state) {
 
+    const myFoxState = state === 'partially_armed' ? 'partial' : state;
+    try {
+      await this.oAuth2Client.updateAlarmState(this.id, myFoxState);
+      await this.setCapabilityValue('homealarm_state', state);
+    } catch (err) {
+      this.error(`updateState() -> error, failed to set homealarm state to ${state}`, err.stack);
+      throw new Error(Homey.__('capability.error_set_homealarm_state', { error: err.message || err.toString() }));
+    }
+
+    this.log(`updateState() -> success setting homealarm state to ${state}`);
+    return state;
   }
 
-  /**
-   * This method will retrieve user information
-   * @returns {Promise}
-   */
-  async getUser() {
-    this.log("GetUser id:"+this.id);
-      try {
-        const data = await this.oAuth2Client.getUser(this.id);
-        this.processUser(data);
-      } catch (err) {
-        this.error('getUser() -> error, failed to retrieve site data', err.message);
-      }
-    }
+  onCapabilityHomeAlarmState(state) {
+    this.log('onCapabilityHomeAlarmState() ->', 'state:', state);
+    return this.updateAlarmState(state);
+  }
 }
 module.exports = MyFoxDevice;

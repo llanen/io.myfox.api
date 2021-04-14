@@ -57,36 +57,6 @@ class MyDriver extends OAuth2Driver {
 	mapDeviceClass() {
 		return MyFoxDevice;
 	}
-	
-	// onInit() {
-	// 	this.log('MyDriver has been inited');
-	// }
-	
-	// onPair( socket ) {
-	// 	this.log('On Pair');
-	// 	let apiUrl = 'https://accounts.somfy.com/oauth/oauth/v2/auth?response_type=code&client_id=' + Homey.env.CLIENT_ID + '&redirect_uri=https%3A%2F%2Fcallback.athom.com%2Foauth2%2Fcallback%2F&state=homeyState'
-
-    //     let myOAuth2Callback = new Homey.CloudOAuth2Callback(apiUrl)
-    //         myOAuth2Callback
-    //             .on('url', url => {
-	// 				this.log('URL');
-    //                 // dend the URL to the front-end to open a popup
-    //                 socket.emit('url', url);
-
-    //             })
-    //             .on('code', code => {
-	// 				this.log('CODE');
-    //                 // ... swap your code here for an access token
-
-    //                 // tell the front-end we're done
-    //                 socket.emit('authorized');
-    //             })
-    //             .generate()
-    //             .catch( err => {
-    //                 socket.emit('error', err);
-    //             })
-
-    // }
 }
 
 module.exports = MyDriver;

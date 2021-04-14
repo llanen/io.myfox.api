@@ -8,7 +8,7 @@ const SomfyOAuth2Client = require('./lib/SomfyOAuth2Client');
 class MyApp extends OAuth2App {
 	
 	async onOAuth2Init() {
-		this.enableOAuth2Debug();
+		//this.enableOAuth2Debug();
 		this.setOAuth2Config({
 		  client: SomfyOAuth2Client,
 		  clientId: Homey.env.CLIENT_ID,
