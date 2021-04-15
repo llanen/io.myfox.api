@@ -3,9 +3,10 @@
 const Homey = require('homey');
 const { OAuth2Device } = require('homey-oauth2app');
 
-var intervalHandle;
+let intervalHandle;
 
 class MyFoxDevice extends OAuth2Device {
+
   async onOAuth2Init() {
     this.log('device.js onOAuth2Init()');
 
@@ -17,16 +18,17 @@ class MyFoxDevice extends OAuth2Device {
     // Fetch initial data update
     await this.getSite();
 
-    intervalHandle = setInterval( () => this.getSite(), 10000 );
-	
+    intervalHandle = setInterval(() => this.getSite(), 10000);
+
     await this.setAvailable();
 
     this.log('onOAuth2Init() -> success');
   }
 
   /**
-   * Method that takes a sessionId and configId, finds the OAuth2Client based on that, then binds the new OAuth2Client
-   * instance to this HomeyDevice instance. Basically it allows switching OAuth2Clients on a HomeyDevice.
+   * Method that takes a sessionId and configId, finds the OAuth2Client based on that,
+   * then binds the new OAuth2Client instance to this HomeyDevice instance.
+   * Basically it allows switching OAuth2Clients on a HomeyDevice.
    * @param {string} sessionId
    * @param {string} configId
    * @returns {Promise<void>}
@@ -52,20 +54,20 @@ class MyFoxDevice extends OAuth2Device {
 
     // Check if device agreementId is present in OAuth2 account
     const sites = await this.oAuth2Client.getSites();
-    if (Array.isArray(sites.items) &&
-      sites.items.find(site => site.site_id === this.id)) {
+    if (Array.isArray(sites.items)
+      && sites.items.find(site => site.site_id === this.id)) {
       return this.setAvailable();
     }
-	return this.setUnavailable(Homey.__('authentication.device_not_found'));
+    return this.setUnavailable(Homey.__('authentication.device_not_found'));
   }
 
-	/**
-	 * Getter for site id.
-	 * @returns {*}
-	 */
-	get id() {
-		return this.getData().id;
-	}
+  /**
+  * Getter for site id.
+  * @returns {*}
+  */
+  get id() {
+    return this.getData().id;
+  }
 
   /**
    * This method will be called when the device has been deleted, it makes
@@ -73,6 +75,7 @@ class MyFoxDevice extends OAuth2Device {
    */
   async onOAuth2Deleted() {
     this.log('onOAuth2Deleted()');
+    clearInterval(intervalHandle);
   }
 
   /**
@@ -83,36 +86,32 @@ class MyFoxDevice extends OAuth2Device {
   processSite(data) {
     this.log('processSite', new Date().getTime());
     if (data) {
-      this.log('security_level = '+data.security_level);
+      this.log(`security_level = ${data.security_level}`);
       const haState = data.security_level === 'partial' ? 'partially_armed' : data.security_level;
       this.setCapabilityValue('homealarm_state', haState).catch(this.error);
 
       // Check for alarm info
       if (data.alarm) {
-        const status = data.alarm.status; //"none", "ongoing"
-        this.log('alarm state = '+status);
+        const { status } = data.alarm; // "none", "ongoing"
+        this.log(`alarm state = ${status}`);
         if (status === 'none') {
           // clear any possbile alarm
           this.setCapabilityValue('alarm_generic', false).catch(this.error);
           this.setCapabilityValue('alarm_fire', false).catch(this.error);
           this.setCapabilityValue('alarm_tamper', false).catch(this.error);
-        }
-        else {
-          const alarmType = data.alarm.alarm_type; //"panic", "trespass", "smoke"
-          this.log('alarm type = '+alarmType);
+        } else {
+          const alarmType = data.alarm.alarm_type; // "panic", "trespass", "smoke"
+          this.log(`alarm type = ${alarmType}`);
           if (alarmType === 'panic') {
             this.setCapabilityValue('alarm_tamper', true).catch(this.error);
-          }
-          else if (alarmType === 'trespass') {
+          } else if (alarmType === 'trespass') {
             this.setCapabilityValue('alarm_generic', true).catch(this.error);
-          }
-          else if (alarmType === 'smoke') {
+          } else if (alarmType === 'smoke') {
             this.setCapabilityValue('alarm_fire', true).catch(this.error);
           }
         }
-      }
-      else {
-        this.log("Alarm status not found");
+      } else {
+        this.log('Alarm status not found');
       }
     }
   }
@@ -122,7 +121,7 @@ class MyFoxDevice extends OAuth2Device {
    * @returns {Promise}
    */
   async getSite() {
-	this.log("GetSite id:"+this.id);  
+    this.log(`GetSite id:${this.id}`);
     try {
       const data = await this.oAuth2Client.getSite(this.id);
       this.processSite(data);
@@ -136,8 +135,7 @@ class MyFoxDevice extends OAuth2Device {
    * @param state ['away', 'home', 'sleep', 'comfort']
    * @param keepProgram - if true program will resume after state change
    */
-   async updateAlarmState(state) {
-
+  async updateAlarmState(state) {
     const myFoxState = state === 'partially_armed' ? 'partial' : state;
     try {
       await this.oAuth2Client.updateAlarmState(this.id, myFoxState);
@@ -155,5 +153,6 @@ class MyFoxDevice extends OAuth2Device {
     this.log('onCapabilityHomeAlarmState() ->', 'state:', state);
     return this.updateAlarmState(state);
   }
+
 }
 module.exports = MyFoxDevice;
